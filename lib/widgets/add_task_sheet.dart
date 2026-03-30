@@ -29,8 +29,11 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
+    return Container(
+      color: cs.surface,
       padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottom),
       child: Form(
         key: _formKey,
@@ -38,14 +41,13 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: 36,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -55,19 +57,22 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 20),
             TextFormField(
               controller: _titleController,
               autofocus: true,
-              style: GoogleFonts.inter(fontSize: 15),
+              style: GoogleFonts.inter(fontSize: 15, color: cs.onSurface),
               decoration: InputDecoration(
                 hintText: 'e.g. Call client X, code feature Y...',
-                hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
+                hintStyle: GoogleFonts.inter(
+                    color: isDark
+                        ? Colors.grey.shade600
+                        : Colors.grey.shade400),
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: cs.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -85,8 +90,8 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               child: ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
+                  backgroundColor: cs.onSurface,
+                  foregroundColor: cs.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

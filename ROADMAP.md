@@ -11,5 +11,5 @@
 - [x] 6. **Search** — quickly find a task by keyword across all days
 
 ## Design
-- [ ] 7. **Dark mode** — full black, for working at night without straining your eyes
+- [x] 7. **Dark mode** — full black, for working at night without straining your eyes
 - [ ] 8. **Android widget** — see your progress directly from the phone home screen without opening the app

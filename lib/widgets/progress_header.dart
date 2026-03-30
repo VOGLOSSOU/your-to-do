@@ -10,6 +10,8 @@ class ProgressHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final done = provider.done;
     final total = provider.total;
     final progress = provider.progress;
@@ -33,7 +35,7 @@ class ProgressHeader extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 4),
@@ -45,7 +47,7 @@ class ProgressHeader extends StatelessWidget {
                     : '$done / $total tasks completed',
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: Colors.grey.shade600,
+              color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
             ),
           ),
           const SizedBox(height: 12),
@@ -55,8 +57,10 @@ class ProgressHeader extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 4,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
+                backgroundColor: isDark
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade200,
+                valueColor: AlwaysStoppedAnimation<Color>(cs.onSurface),
               ),
             ),
         ],

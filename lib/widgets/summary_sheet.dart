@@ -9,62 +9,57 @@ class SummarySheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final done = provider.done;
     final undone = provider.undoneTasks;
 
     return Container(
+      color: cs.surface,
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 36,
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-
           Text(
             "Today's summary",
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 20),
-
-          // Stats row
           Row(
             children: [
               _StatBox(
                 count: done,
                 label: 'Done',
-                color: Colors.black,
                 icon: Icons.check_circle_outline,
+                cs: cs,
+                isDark: isDark,
               ),
               const SizedBox(width: 12),
               _StatBox(
                 count: undone.length,
                 label: 'Remaining',
-                color: Colors.grey.shade400,
                 icon: Icons.radio_button_unchecked,
+                cs: cs,
+                isDark: isDark,
               ),
             ],
           ),
-
-          // Undone list
           if (undone.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text(
@@ -72,7 +67,7 @@ class SummarySheet extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade500,
+                color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
                 letterSpacing: 0.5,
               ),
             ),
@@ -99,7 +94,7 @@ class SummarySheet extends StatelessWidget {
                         task.title,
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: Colors.black87,
+                          color: cs.onSurface,
                         ),
                       ),
                     ),
@@ -108,10 +103,7 @@ class SummarySheet extends StatelessWidget {
               ),
             ),
           ],
-
           const SizedBox(height: 24),
-
-          // Actions
           if (undone.isNotEmpty)
             SizedBox(
               width: double.infinity,
@@ -127,7 +119,7 @@ class SummarySheet extends StatelessWidget {
                           '${undone.length} task${undone.length > 1 ? 's' : ''} carried over to tomorrow',
                           style: GoogleFonts.inter(fontSize: 13),
                         ),
-                        backgroundColor: Colors.black,
+                        backgroundColor: cs.onSurface,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -137,8 +129,8 @@ class SummarySheet extends StatelessWidget {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
+                  backgroundColor: cs.onSurface,
+                  foregroundColor: cs.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -147,9 +139,7 @@ class SummarySheet extends StatelessWidget {
                 child: Text(
                   'Carry over to tomorrow',
                   style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                      fontWeight: FontWeight.w600, fontSize: 15),
                 ),
               ),
             ),
@@ -169,7 +159,7 @@ class SummarySheet extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
-                  color: Colors.grey.shade500,
+                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
                 ),
               ),
             ),
@@ -183,14 +173,16 @@ class SummarySheet extends StatelessWidget {
 class _StatBox extends StatelessWidget {
   final int count;
   final String label;
-  final Color color;
   final IconData icon;
+  final ColorScheme cs;
+  final bool isDark;
 
   const _StatBox({
     required this.count,
     required this.label,
-    required this.color,
     required this.icon,
+    required this.cs,
+    required this.isDark,
   });
 
   @override
@@ -199,13 +191,13 @@ class _StatBox extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: cs.outline),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: color),
+            Icon(icon, size: 20, color: cs.onSurface),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,14 +207,16 @@ class _StatBox extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: cs.onSurface,
                   ),
                 ),
                 Text(
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: isDark
+                        ? Colors.grey.shade500
+                        : Colors.grey.shade500,
                   ),
                 ),
               ],

@@ -10,6 +10,8 @@ class WeekStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final selected = provider.selectedDate;
     final today = DateTime.now();
 
@@ -35,17 +37,15 @@ class WeekStrip extends StatelessWidget {
           final dateKey = DateFormat('yyyy-MM-dd').format(day);
           final hasTask = provider.activeDates.contains(dateKey);
 
-          final dayLetter = DateFormat('E').format(day)[0].toUpperCase();
-          final dayNum = '${day.day}';
-
           return GestureDetector(
             onTap: () => provider.selectDate(day),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.black : Colors.transparent,
+                color: isSelected ? cs.onSurface : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -53,30 +53,36 @@ class WeekStrip extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    dayLetter,
+                    DateFormat('E').format(day)[0].toUpperCase(),
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: isSelected
-                          ? Colors.white70
-                          : Colors.grey.shade400,
+                          ? cs.surface.withValues(alpha:0.7)
+                          : isDark
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade400,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    isTomorrow && !isSelected ? '+1' : dayNum,
+                    isTomorrow && !isSelected ? '+1' : '${day.day}',
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: isSelected || isToday || isTomorrow
                           ? FontWeight.w700
                           : FontWeight.w400,
                       color: isSelected
-                          ? Colors.white
+                          ? cs.surface
                           : isToday
-                              ? Colors.black
+                              ? cs.onSurface
                               : isTomorrow
-                                  ? Colors.grey.shade600
-                                  : Colors.grey.shade500,
+                                  ? isDark
+                                      ? Colors.grey.shade400
+                                      : Colors.grey.shade600
+                                  : isDark
+                                      ? Colors.grey.shade600
+                                      : Colors.grey.shade500,
                     ),
                   ),
                   if (hasTask) ...[
@@ -86,7 +92,9 @@ class WeekStrip extends StatelessWidget {
                       height: 5,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isSelected ? Colors.white60 : Colors.black,
+                        color: isSelected
+                            ? cs.surface.withValues(alpha:0.6)
+                            : cs.onSurface,
                       ),
                     ),
                   ],

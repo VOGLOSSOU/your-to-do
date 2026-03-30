@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/week_strip.dart';
 import '../widgets/progress_header.dart';
 import '../widgets/task_tile.dart';
@@ -56,9 +57,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final canAdd = selected == today || selected == tomorrow;
     final isPast = selected.isBefore(today);
     final isSearching = provider.isSearching;
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDark;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: cs.onSurface,
                           ),
                         ),
                         Row(
@@ -117,7 +120,24 @@ class _HomeScreenState extends State<HomeScreen> {
                             GestureDetector(
                               onTap: () => provider.openSearch(),
                               child: Icon(Icons.search,
-                                  size: 22, color: Colors.grey.shade500),
+                                  size: 22,
+                                  color: isDark
+                                      ? Colors.grey.shade500
+                                      : Colors.grey.shade500),
+                            ),
+                            const SizedBox(width: 14),
+                            // Dark mode toggle
+                            GestureDetector(
+                              onTap: () => themeProvider.toggle(),
+                              child: Icon(
+                                isDark
+                                    ? Icons.light_mode_outlined
+                                    : Icons.dark_mode_outlined,
+                                size: 22,
+                                color: isDark
+                                    ? Colors.grey.shade500
+                                    : Colors.grey.shade500,
+                              ),
                             ),
                             if (isToday && provider.total > 0) ...[
                               const SizedBox(width: 14),
@@ -139,21 +159,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
+                                    color: cs.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(
                                     children: [
                                       Icon(Icons.bar_chart,
                                           size: 15,
-                                          color: Colors.grey.shade600),
+                                          color: isDark
+                                              ? Colors.grey.shade400
+                                              : Colors.grey.shade600),
                                       const SizedBox(width: 5),
                                       Text(
                                         'Summary',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.grey.shade600,
+                                          color: isDark
+                                              ? Colors.grey.shade400
+                                              : Colors.grey.shade600,
                                         ),
                                       ),
                                     ],
@@ -187,14 +211,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.check_circle_outline,
-                                  size: 48, color: Colors.grey.shade300),
+                                  size: 48,
+                                  color: isDark
+                                      ? Colors.grey.shade700
+                                      : Colors.grey.shade300),
                               const SizedBox(height: 12),
                               Text(
                                 provider.filter == TaskFilter.all
                                     ? 'No tasks for this day'
                                     : 'No tasks in this category',
                                 style: GoogleFonts.inter(
-                                  color: Colors.grey.shade400,
+                                  color: isDark
+                                      ? Colors.grey.shade600
+                                      : Colors.grey.shade400,
                                   fontSize: 15,
                                 ),
                               ),
@@ -283,7 +312,7 @@ class _Chip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? Colors.black : Colors.grey.shade100,
+          color: selected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -305,7 +334,7 @@ class _Chip extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: selected ? Colors.white : Colors.grey.shade600,
+                color: selected ? Theme.of(context).colorScheme.surface : Colors.grey.shade600,
               ),
             ),
           ],

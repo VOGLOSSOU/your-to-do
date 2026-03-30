@@ -8,13 +8,11 @@ class SearchResults extends StatelessWidget {
   const SearchResults({super.key});
 
   String _dateLabel(String dateKey) {
-    final fmt = DateFormat('yyyy-MM-dd');
-    final date = fmt.parse(dateKey);
+    final date = DateFormat('yyyy-MM-dd').parse(dateKey);
     final today = DateTime.now();
     final todayKey = DateFormat('yyyy-MM-dd').format(today);
-    final tomorrowKey = DateFormat('yyyy-MM-dd')
-        .format(today.add(const Duration(days: 1)));
-
+    final tomorrowKey =
+        DateFormat('yyyy-MM-dd').format(today.add(const Duration(days: 1)));
     if (dateKey == todayKey) return 'Today';
     if (dateKey == tomorrowKey) return 'Tomorrow';
     return DateFormat('EEE, MMM d').format(date);
@@ -23,6 +21,8 @@ class SearchResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final query = provider.searchQuery;
     final results = provider.searchResults;
 
@@ -31,9 +31,8 @@ class SearchResults extends StatelessWidget {
         child: Text(
           'Type to search across all days',
           style: GoogleFonts.inter(
-            color: Colors.grey.shade400,
-            fontSize: 14,
-          ),
+              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              fontSize: 14),
         ),
       );
     }
@@ -43,14 +42,15 @@ class SearchResults extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 40, color: Colors.grey.shade300),
+            Icon(Icons.search_off,
+                size: 40,
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
             const SizedBox(height: 12),
             Text(
               'No results for "$query"',
               style: GoogleFonts.inter(
-                color: Colors.grey.shade400,
-                fontSize: 14,
-              ),
+                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                  fontSize: 14),
             ),
           ],
         ),
@@ -66,26 +66,25 @@ class SearchResults extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: task.isDone ? Colors.grey.shade50 : Colors.white,
+            color: task.isDone ? cs.surfaceContainerHighest : cs.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: cs.outline),
           ),
           child: Row(
             children: [
-              // Done indicator
               Container(
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: task.isDone ? Colors.black : Colors.transparent,
+                  color: task.isDone ? cs.onSurface : Colors.transparent,
                   border: Border.all(
-                    color: task.isDone ? Colors.black : Colors.grey.shade300,
+                    color: task.isDone ? cs.onSurface : cs.outline,
                     width: 1.5,
                   ),
                 ),
                 child: task.isDone
-                    ? const Icon(Icons.check, size: 13, color: Colors.white)
+                    ? Icon(Icons.check, size: 13, color: cs.surface)
                     : null,
               ),
               const SizedBox(width: 12),
@@ -103,13 +102,16 @@ class SearchResults extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _HighlightedText(text: task.title, query: query),
+                    _HighlightedText(
+                        text: task.title, query: query, cs: cs, isDark: isDark),
                     const SizedBox(height: 3),
                     Text(
                       _dateLabel(task.date),
                       style: GoogleFonts.inter(
                         fontSize: 11,
-                        color: Colors.grey.shade400,
+                        color: isDark
+                            ? Colors.grey.shade600
+                            : Colors.grey.shade400,
                       ),
                     ),
                   ],
@@ -126,8 +128,15 @@ class SearchResults extends StatelessWidget {
 class _HighlightedText extends StatelessWidget {
   final String text;
   final String query;
+  final ColorScheme cs;
+  final bool isDark;
 
-  const _HighlightedText({required this.text, required this.query});
+  const _HighlightedText({
+    required this.text,
+    required this.query,
+    required this.cs,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -138,20 +147,26 @@ class _HighlightedText extends StatelessWidget {
     if (index == -1) {
       return Text(
         text,
-        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
+        style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: cs.onSurface),
       );
     }
 
     return RichText(
       text: TextSpan(
         style: GoogleFonts.inter(
-            fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: cs.onSurface),
         children: [
           TextSpan(text: text.substring(0, index)),
           TextSpan(
             text: text.substring(index, index + query.length),
-            style: const TextStyle(
-              backgroundColor: Color(0xFFFFE580),
+            style: TextStyle(
+              backgroundColor:
+                  isDark ? Colors.yellow.shade800 : const Color(0xFFFFE580),
               fontWeight: FontWeight.bold,
             ),
           ),
