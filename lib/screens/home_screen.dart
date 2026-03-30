@@ -41,7 +41,6 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            // App title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -54,11 +53,11 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Week strip
             const WeekStrip(),
             const SizedBox(height: 20),
-            // Progress
             const ProgressHeader(),
+            // Filter selector
+            if (provider.total > 0) _FilterBar(),
             // Task list
             Expanded(
               child: tasks.isEmpty
@@ -70,7 +69,9 @@ class HomeScreen extends StatelessWidget {
                               size: 48, color: Colors.grey.shade300),
                           const SizedBox(height: 12),
                           Text(
-                            'No tasks for this day',
+                            provider.filter == TaskFilter.all
+                                ? 'No tasks for this day'
+                                : 'No tasks in this category',
                             style: GoogleFonts.inter(
                               color: Colors.grey.shade400,
                               fontSize: 15,
@@ -79,28 +80,14 @@ class HomeScreen extends StatelessWidget {
                         ],
                       ),
                     )
-                  : isToday
-                      ? ReorderableListView.builder(
-                          padding: const EdgeInsets.only(bottom: 100),
-                          itemCount: tasks.length,
-                          onReorder: context.read<TaskProvider>().reorderTasks,
-                          proxyDecorator: (child, index, animation) => Material(
-                            color: Colors.transparent,
-                            child: child,
-                          ),
-                          itemBuilder: (_, i) => TaskTile(
-                            key: Key('tile_${tasks[i].id}'),
-                            task: tasks[i],
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 100),
-                          itemCount: tasks.length,
-                          itemBuilder: (_, i) => TaskTile(
-                            task: tasks[i],
-                            readOnly: true,
-                          ),
-                        ),
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 100),
+                      itemCount: tasks.length,
+                      itemBuilder: (_, i) => TaskTile(
+                        task: tasks[i],
+                        readOnly: !isToday,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -114,6 +101,93 @@ class HomeScreen extends StatelessWidget {
               child: const Icon(Icons.add),
             )
           : null,
+    );
+  }
+}
+
+class _FilterBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<TaskProvider>();
+    final current = provider.filter;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: Row(
+        children: [
+          _Chip(
+            label: 'All',
+            selected: current == TaskFilter.all,
+            onTap: () => provider.setFilter(TaskFilter.all),
+          ),
+          const SizedBox(width: 8),
+          _Chip(
+            label: 'Urgent',
+            selected: current == TaskFilter.urgent,
+            onTap: () => provider.setFilter(TaskFilter.urgent),
+            dotColor: Colors.red,
+          ),
+          const SizedBox(width: 8),
+          _Chip(
+            label: 'Normal',
+            selected: current == TaskFilter.normal,
+            onTap: () => provider.setFilter(TaskFilter.normal),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final Color? dotColor;
+
+  const _Chip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.dotColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.black : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dotColor != null) ...[
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? Colors.white : dotColor,
+                ),
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: selected ? Colors.white : Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

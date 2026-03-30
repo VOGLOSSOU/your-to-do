@@ -3,19 +3,38 @@ import 'package:intl/intl.dart';
 import '../db/database_helper.dart';
 import '../models/task.dart';
 
+enum TaskFilter { all, urgent, normal }
+
 class TaskProvider extends ChangeNotifier {
   final _db = DatabaseHelper.instance;
   final _fmt = DateFormat('yyyy-MM-dd');
 
   DateTime _selectedDate = DateTime.now();
   List<Task> _tasks = [];
+  TaskFilter _filter = TaskFilter.all;
 
   DateTime get selectedDate => _selectedDate;
-  List<Task> get tasks => List.unmodifiable(_tasks);
+  TaskFilter get filter => _filter;
   int get total => _tasks.length;
   int get done => _tasks.where((t) => t.isDone).length;
   double get progress => total == 0 ? 0.0 : done / total;
   String get selectedDateKey => _fmt.format(_selectedDate);
+
+  List<Task> get tasks {
+    switch (_filter) {
+      case TaskFilter.urgent:
+        return List.unmodifiable(_tasks.where((t) => t.isUrgent).toList());
+      case TaskFilter.normal:
+        return List.unmodifiable(_tasks.where((t) => !t.isUrgent).toList());
+      case TaskFilter.all:
+        return List.unmodifiable(_tasks);
+    }
+  }
+
+  void setFilter(TaskFilter f) {
+    _filter = f;
+    notifyListeners();
+  }
 
   TaskProvider() {
     loadTasks();
@@ -60,14 +79,6 @@ class TaskProvider extends ChangeNotifier {
   Future<void> deleteTask(int id) async {
     await _db.deleteTask(id, selectedDateKey);
     _tasks.removeWhere((t) => t.id == id);
-    notifyListeners();
-  }
-
-  Future<void> reorderTasks(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex--;
-    final task = _tasks.removeAt(oldIndex);
-    _tasks.insert(newIndex, task);
-    await _db.saveAllTasks(selectedDateKey, _tasks);
     notifyListeners();
   }
 

@@ -108,13 +108,6 @@ class TaskTile extends StatelessWidget {
                     color: Colors.grey.shade400,
                   ),
                 ),
-                const SizedBox(width: 10),
-                // Drag handle
-                Icon(
-                  Icons.drag_handle,
-                  size: 16,
-                  color: Colors.grey.shade300,
-                ),
               ],
             ],
           ),
