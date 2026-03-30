@@ -1,70 +1,65 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
+import '../db/database_helper.dart';
 import '../models/task.dart';
 
 class TaskProvider extends ChangeNotifier {
-  static const _key = 'tasks';
-  final _uuid = const Uuid();
+  final _db = DatabaseHelper.instance;
+  final _fmt = DateFormat('yyyy-MM-dd');
+
+  DateTime _selectedDate = DateTime.now();
   List<Task> _tasks = [];
 
+  DateTime get selectedDate => _selectedDate;
   List<Task> get tasks => List.unmodifiable(_tasks);
   int get total => _tasks.length;
   int get done => _tasks.where((t) => t.isDone).length;
-  double get progress => total == 0 ? 0 : done / total;
+  double get progress => total == 0 ? 0.0 : done / total;
+  String get selectedDateKey => _fmt.format(_selectedDate);
 
   TaskProvider() {
-    _load();
+    loadTasks();
   }
 
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null) return;
-    final List<dynamic> list = jsonDecode(raw);
-    // Only keep tasks from today
-    final today = DateTime.now();
-    _tasks = list
-        .map((e) => Task.fromMap(e))
-        .where((t) =>
-            t.createdAt.year == today.year &&
-            t.createdAt.month == today.month &&
-            t.createdAt.day == today.day)
-        .toList();
+  Future<void> selectDate(DateTime date) async {
+    _selectedDate = date;
+    await loadTasks();
+  }
+
+  Future<void> loadTasks() async {
+    _tasks = await _db.getTasksByDate(selectedDateKey);
     notifyListeners();
   }
 
-  Future<void> _save() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _key,
-      jsonEncode(_tasks.map((t) => t.toMap()).toList()),
-    );
-  }
-
-  Future<void> addTask(String subject, String description) async {
-    _tasks.add(Task(
-      id: _uuid.v4(),
-      subject: subject,
-      description: description,
-      createdAt: DateTime.now(),
+  Future<void> addTask(String title, String? startTime, String? endTime) async {
+    final task = await _db.insertTask(Task(
+      title: title,
+      date: selectedDateKey,
+      startTime: startTime,
+      endTime: endTime,
     ));
+    _tasks.add(task);
+    // Re-sort by start time
+    _tasks.sort((a, b) {
+      if (a.startTime == null) return 1;
+      if (b.startTime == null) return -1;
+      return a.startTime!.compareTo(b.startTime!);
+    });
     notifyListeners();
-    await _save();
   }
 
-  Future<void> toggleTask(String id) async {
+  Future<void> toggleTask(int id) async {
     final index = _tasks.indexWhere((t) => t.id == id);
     if (index == -1) return;
-    _tasks[index] = _tasks[index].copyWith(isDone: !_tasks[index].isDone);
+    final newVal = !_tasks[index].isDone;
+    await _db.updateDone(id, newVal);
+    _tasks[index] = _tasks[index].copyWith(isDone: newVal);
     notifyListeners();
-    await _save();
   }
 
-  Future<void> deleteTask(String id) async {
+  Future<void> deleteTask(int id) async {
+    await _db.deleteTask(id);
     _tasks.removeWhere((t) => t.id == id);
     notifyListeners();
-    await _save();
   }
 }

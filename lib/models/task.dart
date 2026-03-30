@@ -1,46 +1,44 @@
-import 'dart:convert';
-
 class Task {
-  final String id;
-  final String subject;
-  final String description;
-  bool isDone;
-  final DateTime createdAt;
+  final int? id;
+  final String title;
+  final String date; // YYYY-MM-DD
+  final String? startTime; // HH:mm
+  final String? endTime; // HH:mm
+  final bool isDone;
 
-  Task({
-    required this.id,
-    required this.subject,
-    required this.description,
+  const Task({
+    this.id,
+    required this.title,
+    required this.date,
+    this.startTime,
+    this.endTime,
     this.isDone = false,
-    required this.createdAt,
   });
 
-  Task copyWith({bool? isDone}) {
-    return Task(
-      id: id,
-      subject: subject,
-      description: description,
-      isDone: isDone ?? this.isDone,
-      createdAt: createdAt,
-    );
-  }
-
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'subject': subject,
-        'description': description,
-        'isDone': isDone,
-        'createdAt': createdAt.toIso8601String(),
-      };
-
-  factory Task.fromMap(Map<String, dynamic> map) => Task(
-        id: map['id'],
-        subject: map['subject'],
-        description: map['description'],
-        isDone: map['isDone'],
-        createdAt: DateTime.parse(map['createdAt']),
+  Task copyWith({bool? isDone}) => Task(
+        id: id,
+        title: title,
+        date: date,
+        startTime: startTime,
+        endTime: endTime,
+        isDone: isDone ?? this.isDone,
       );
 
-  String toJson() => jsonEncode(toMap());
-  factory Task.fromJson(String source) => Task.fromMap(jsonDecode(source));
+  Map<String, dynamic> toMap() => {
+        if (id != null) 'id': id,
+        'title': title,
+        'date': date,
+        'start_time': startTime,
+        'end_time': endTime,
+        'is_done': isDone ? 1 : 0,
+      };
+
+  factory Task.fromMap(Map<String, dynamic> m) => Task(
+        id: m['id'] as int?,
+        title: m['title'] as String,
+        date: m['date'] as String,
+        startTime: m['start_time'] as String?,
+        endTime: m['end_time'] as String?,
+        isDone: (m['is_done'] as int) == 1,
+      );
 }
