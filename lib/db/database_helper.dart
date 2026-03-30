@@ -54,6 +54,14 @@ class DatabaseHelper {
     await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 
+  Future<void> saveAllTasks(String date, List<Task> tasks) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _keyForDate(date),
+      jsonEncode(tasks.map((t) => t.toMap()).toList()),
+    );
+  }
+
   Future<void> deleteTask(int id, String date) async {
     final prefs = await SharedPreferences.getInstance();
     final key = _keyForDate(date);

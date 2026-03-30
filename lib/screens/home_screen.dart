@@ -79,11 +79,30 @@ class HomeScreen extends StatelessWidget {
                         ],
                       ),
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 100),
-                      itemCount: tasks.length,
-                      itemBuilder: (_, i) => TaskTile(task: tasks[i], readOnly: !isToday),
-                    ),
+                  : isToday
+                      ? ReorderableListView.builder(
+                          padding: const EdgeInsets.only(bottom: 100),
+                          itemCount: tasks.length,
+                          buildDefaultDragHandles: false,
+                          onReorder: context.read<TaskProvider>().reorderTasks,
+                          proxyDecorator: (child, index, animation) => Material(
+                            color: Colors.transparent,
+                            child: child,
+                          ),
+                          itemBuilder: (_, i) => ReorderableDelayedDragStartListener(
+                            key: Key('tile_${tasks[i].id}'),
+                            index: i,
+                            child: TaskTile(task: tasks[i]),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 100),
+                          itemCount: tasks.length,
+                          itemBuilder: (_, i) => TaskTile(
+                            task: tasks[i],
+                            readOnly: true,
+                          ),
+                        ),
             ),
           ],
         ),

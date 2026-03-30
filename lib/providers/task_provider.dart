@@ -63,6 +63,14 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> reorderTasks(int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex--;
+    final task = _tasks.removeAt(oldIndex);
+    _tasks.insert(newIndex, task);
+    await _db.saveAllTasks(selectedDateKey, _tasks);
+    notifyListeners();
+  }
+
   // Urgent tasks always on top, done tasks always at the bottom
   List<Task> _sorted(List<Task> tasks) {
     final urgent = tasks.where((t) => t.isUrgent && !t.isDone).toList();
