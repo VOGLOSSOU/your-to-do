@@ -31,7 +31,7 @@ class WeekStrip extends StatelessWidget {
               day.day == selected.day;
           final isToday = i == 6;
 
-          final dayLetter = DateFormat('E', 'fr_FR').format(day)[0].toUpperCase();
+          final dayLetter = DateFormat('E').format(day)[0].toUpperCase();
           final dayNum = '${day.day}';
 
           return GestureDetector(

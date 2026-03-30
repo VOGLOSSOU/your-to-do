@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Mes tâches',
+                'My Tasks',
                 style: GoogleFonts.inter(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                               size: 48, color: Colors.grey.shade300),
                           const SizedBox(height: 12),
                           Text(
-                            'Aucune tâche pour ce jour',
+                            'No tasks for this day',
                             style: GoogleFonts.inter(
                               color: Colors.grey.shade400,
                               fontSize: 15,

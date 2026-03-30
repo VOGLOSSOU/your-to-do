@@ -51,7 +51,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               ),
             ),
             Text(
-              'Nouvelle tâche',
+              'New task',
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -64,7 +64,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               autofocus: true,
               style: GoogleFonts.inter(fontSize: 15),
               decoration: InputDecoration(
-                hintText: 'Ex: Appeler client X, coder feature Y...',
+                hintText: 'e.g. Call client X, code feature Y...',
                 hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
                 filled: true,
                 fillColor: Colors.grey.shade100,
@@ -74,7 +74,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 ),
               ),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Champ requis' : null,
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
             ),
@@ -93,7 +93,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   elevation: 0,
                 ),
                 child: Text(
-                  'Ajouter',
+                  'Add',
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,

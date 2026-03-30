@@ -20,8 +20,8 @@ class ProgressHeader extends StatelessWidget {
         date.day == DateTime.now().day;
 
     final dateLabel = isToday
-        ? "Aujourd'hui"
-        : DateFormat('EEEE d MMMM', 'fr_FR').format(date);
+        ? "Today"
+        : DateFormat('EEEE, MMMM d').format(date);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -39,10 +39,10 @@ class ProgressHeader extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             total == 0
-                ? 'Aucune tâche planifiée'
+                ? 'No tasks for this day'
                 : done == total
-                    ? 'Tout est fait — belle journée !'
-                    : '$done / $total tâches effectuées',
+                    ? 'All done — great work!'
+                    : '$done / $total tasks completed',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: Colors.grey.shade600,
