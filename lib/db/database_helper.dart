@@ -54,6 +54,21 @@ class DatabaseHelper {
     await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 
+  Future<List<Task>> searchTasks(String query, List<String> dates) async {
+    final prefs = await SharedPreferences.getInstance();
+    final results = <Task>[];
+    for (final date in dates) {
+      final raw = prefs.getString(_keyForDate(date));
+      if (raw == null) continue;
+      final tasks = (jsonDecode(raw) as List)
+          .map((e) => Task.fromMap(Map<String, dynamic>.from(e)))
+          .where((t) => t.title.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+      results.addAll(tasks);
+    }
+    return results;
+  }
+
   Future<bool> hasTasksForDate(String date) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_keyForDate(date));

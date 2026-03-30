@@ -7,11 +7,25 @@ import '../widgets/progress_header.dart';
 import '../widgets/task_tile.dart';
 import '../widgets/add_task_sheet.dart';
 import '../widgets/summary_sheet.dart';
+import '../widgets/search_results.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  void _showAddSheet(BuildContext context) {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _showAddSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -41,6 +55,7 @@ class HomeScreen extends StatelessWidget {
     final isToday = selected == today;
     final canAdd = selected == today || selected == tomorrow;
     final isPast = selected.isBefore(today);
+    final isSearching = provider.isSearching;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -49,104 +64,158 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
+
+            // Header row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'My Tasks',
-                    style: GoogleFonts.inter(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  if (isToday && provider.total > 0)
-                    GestureDetector(
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.white,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(20)),
-                        ),
-                        builder: (_) => ChangeNotifierProvider.value(
-                          value: provider,
-                          child: const SummarySheet(),
-                        ),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.bar_chart,
-                                size: 15, color: Colors.grey.shade600),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Summary',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade600,
-                              ),
+              child: isSearching
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            autofocus: true,
+                            style: GoogleFonts.inter(fontSize: 16),
+                            decoration: InputDecoration(
+                              hintText: 'Search tasks...',
+                              hintStyle: GoogleFonts.inter(
+                                  color: Colors.grey.shade400),
+                              border: InputBorder.none,
                             ),
-                          ],
+                            onChanged: (q) => provider.search(q),
+                          ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const WeekStrip(),
-            const SizedBox(height: 20),
-            const ProgressHeader(),
-            // Filter selector
-            if (provider.total > 0) _FilterBar(),
-            // Task list
-            Expanded(
-              child: tasks.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.check_circle_outline,
-                              size: 48, color: Colors.grey.shade300),
-                          const SizedBox(height: 12),
-                          Text(
-                            provider.filter == TaskFilter.all
-                                ? 'No tasks for this day'
-                                : 'No tasks in this category',
+                        GestureDetector(
+                          onTap: () {
+                            _searchController.clear();
+                            provider.closeSearch();
+                          },
+                          child: Text(
+                            'Cancel',
                             style: GoogleFonts.inter(
-                              color: Colors.grey.shade400,
-                              fontSize: 15,
+                              fontSize: 14,
+                              color: Colors.grey.shade500,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 100),
-                      itemCount: tasks.length,
-                      itemBuilder: (_, i) => TaskTile(
-                        task: tasks[i],
-                        readOnly: isPast,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'My Tasks',
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            // Search icon
+                            GestureDetector(
+                              onTap: () => provider.openSearch(),
+                              child: Icon(Icons.search,
+                                  size: 22, color: Colors.grey.shade500),
+                            ),
+                            if (isToday && provider.total > 0) ...[
+                              const SizedBox(width: 14),
+                              GestureDetector(
+                                onTap: () => showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.white,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(20)),
+                                  ),
+                                  builder: (_) => ChangeNotifierProvider.value(
+                                    value: provider,
+                                    child: const SummarySheet(),
+                                  ),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.bar_chart,
+                                          size: 15,
+                                          color: Colors.grey.shade600),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        'Summary',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
+            ),
+
+            // Normal view
+            if (!isSearching) ...[
+              const SizedBox(height: 16),
+              const WeekStrip(),
+              const SizedBox(height: 20),
+              const ProgressHeader(),
+              if (provider.total > 0) const _FilterBar(),
+            ] else
+              const SizedBox(height: 16),
+
+            // Content
+            Expanded(
+              child: isSearching
+                  ? const SearchResults()
+                  : tasks.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline,
+                                  size: 48, color: Colors.grey.shade300),
+                              const SizedBox(height: 12),
+                              Text(
+                                provider.filter == TaskFilter.all
+                                    ? 'No tasks for this day'
+                                    : 'No tasks in this category',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey.shade400,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 100),
+                          itemCount: tasks.length,
+                          itemBuilder: (_, i) => TaskTile(
+                            task: tasks[i],
+                            readOnly: isPast,
+                          ),
+                        ),
             ),
           ],
         ),
       ),
-      floatingActionButton: canAdd
+      floatingActionButton: !isSearching && canAdd
           ? FloatingActionButton(
-              onPressed: () => _showAddSheet(context),
+              onPressed: _showAddSheet,
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
               elevation: 2,
@@ -158,6 +227,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _FilterBar extends StatelessWidget {
+  const _FilterBar();
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();

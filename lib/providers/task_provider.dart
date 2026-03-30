@@ -13,10 +13,16 @@ class TaskProvider extends ChangeNotifier {
   List<Task> _tasks = [];
   TaskFilter _filter = TaskFilter.all;
   Set<String> _activeDates = {};
+  String _searchQuery = '';
+  List<Task> _searchResults = [];
+  bool _isSearching = false;
 
   DateTime get selectedDate => _selectedDate;
   TaskFilter get filter => _filter;
   Set<String> get activeDates => _activeDates;
+  bool get isSearching => _isSearching;
+  String get searchQuery => _searchQuery;
+  List<Task> get searchResults => List.unmodifiable(_searchResults);
   int get total => _tasks.length;
   int get done => _tasks.where((t) => t.isDone).length;
   double get progress => total == 0 ? 0.0 : done / total;
@@ -101,6 +107,36 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void openSearch() {
+    _isSearching = true;
+    _searchQuery = '';
+    _searchResults = [];
+    notifyListeners();
+  }
+
+  void closeSearch() {
+    _isSearching = false;
+    _searchQuery = '';
+    _searchResults = [];
+    notifyListeners();
+  }
+
+  Future<void> search(String query) async {
+    _searchQuery = query;
+    if (query.trim().isEmpty) {
+      _searchResults = [];
+      notifyListeners();
+      return;
+    }
+    final today = DateTime.now();
+    final dates = List.generate(7, (i) {
+      final d = today.subtract(Duration(days: 5 - i));
+      return _fmt.format(d);
+    });
+    _searchResults = await _db.searchTasks(query, dates);
+    notifyListeners();
+  }
+
   List<Task> get undoneTasks =>
       List.unmodifiable(_tasks.where((t) => !t.isDone).toList());
 
@@ -108,6 +144,7 @@ class TaskProvider extends ChangeNotifier {
     final undone = _tasks.where((t) => !t.isDone).toList();
     if (undone.isEmpty) return;
     final tomorrow = _fmt.format(DateTime.now().add(const Duration(days: 1)));
+    // Copy to tomorrow
     for (final task in undone) {
       await _db.insertTask(Task(
         title: task.title,
@@ -115,7 +152,13 @@ class TaskProvider extends ChangeNotifier {
         isUrgent: task.isUrgent,
       ));
     }
+    // Remove from today
+    for (final task in undone) {
+      await _db.deleteTask(task.id!, selectedDateKey);
+    }
+    _tasks.removeWhere((t) => !t.isDone);
     _activeDates.add(tomorrow);
+    if (_tasks.isEmpty) _activeDates.remove(selectedDateKey);
     notifyListeners();
   }
 
