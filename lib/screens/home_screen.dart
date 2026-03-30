@@ -30,10 +30,17 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
     final tasks = provider.tasks;
-    final today = DateTime.now();
-    final isToday = provider.selectedDate.year == today.year &&
-        provider.selectedDate.month == today.month &&
-        provider.selectedDate.day == today.day;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final selected = DateTime(
+      provider.selectedDate.year,
+      provider.selectedDate.month,
+      provider.selectedDate.day,
+    );
+    final isToday = selected == today;
+    final canAdd = selected == today || selected == tomorrow;
+    final isPast = selected.isBefore(today);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -130,14 +137,14 @@ class HomeScreen extends StatelessWidget {
                       itemCount: tasks.length,
                       itemBuilder: (_, i) => TaskTile(
                         task: tasks[i],
-                        readOnly: !isToday,
+                        readOnly: isPast,
                       ),
                     ),
             ),
           ],
         ),
       ),
-      floatingActionButton: isToday
+      floatingActionButton: canAdd
           ? FloatingActionButton(
               onPressed: () => _showAddSheet(context),
               backgroundColor: Colors.black,

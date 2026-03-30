@@ -46,7 +46,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> _loadActiveDates() async {
     final today = DateTime.now();
     final dates = List.generate(7, (i) {
-      final d = today.subtract(Duration(days: 6 - i));
+      final d = today.subtract(Duration(days: 5 - i));
       return _fmt.format(d);
     });
     final results = await Future.wait(dates.map(_db.hasTasksForDate));

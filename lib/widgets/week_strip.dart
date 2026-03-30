@@ -13,8 +13,9 @@ class WeekStrip extends StatelessWidget {
     final selected = provider.selectedDate;
     final today = DateTime.now();
 
+    // J-5 → today (index 5) → tomorrow (index 6)
     final days = List.generate(7, (i) {
-      final d = today.subtract(Duration(days: 6 - i));
+      final d = today.subtract(Duration(days: 5 - i));
       return DateTime(d.year, d.month, d.day);
     });
 
@@ -29,7 +30,8 @@ class WeekStrip extends StatelessWidget {
           final isSelected = day.year == selected.year &&
               day.month == selected.month &&
               day.day == selected.day;
-          final isToday = i == 6;
+          final isToday = i == 5;
+          final isTomorrow = i == 6;
           final dateKey = DateFormat('yyyy-MM-dd').format(day);
           final hasTask = provider.activeDates.contains(dateKey);
 
@@ -62,17 +64,19 @@ class WeekStrip extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    dayNum,
+                    isTomorrow && !isSelected ? '+1' : dayNum,
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      fontWeight: isSelected || isToday
+                      fontWeight: isSelected || isToday || isTomorrow
                           ? FontWeight.w700
                           : FontWeight.w400,
                       color: isSelected
                           ? Colors.white
                           : isToday
                               ? Colors.black
-                              : Colors.grey.shade500,
+                              : isTomorrow
+                                  ? Colors.grey.shade600
+                                  : Colors.grey.shade500,
                     ),
                   ),
                   if (hasTask) ...[
