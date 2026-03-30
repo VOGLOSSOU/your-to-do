@@ -13,17 +13,16 @@ class WeekStrip extends StatelessWidget {
     final selected = provider.selectedDate;
     final today = DateTime.now();
 
-    // Last 7 days: J-6 → aujourd'hui
     final days = List.generate(7, (i) {
       final d = today.subtract(Duration(days: 6 - i));
       return DateTime(d.year, d.month, d.day);
     });
 
     return SizedBox(
-      height: 72,
+      height: 36,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: 7,
         itemBuilder: (_, i) {
           final day = days[i];
@@ -32,36 +31,45 @@ class WeekStrip extends StatelessWidget {
               day.day == selected.day;
           final isToday = i == 6;
 
+          final dayLetter = DateFormat('E', 'fr_FR').format(day)[0].toUpperCase();
+          final dayNum = '${day.day}';
+
           return GestureDetector(
             onTap: () => provider.selectDate(day),
-            child: Container(
-              width: 44,
-              margin: const EdgeInsets.only(right: 8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.black : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-                border: isToday && !isSelected
-                    ? Border.all(color: Colors.black, width: 1.5)
-                    : null,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    DateFormat('E', 'fr_FR').format(day)[0].toUpperCase(),
+                    dayLetter,
                     style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected ? Colors.white : Colors.grey,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: isSelected
+                          ? Colors.white70
+                          : Colors.grey.shade400,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    '${day.day}',
+                    dayNum,
                     style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.black,
+                      fontSize: 13,
+                      fontWeight: isSelected || isToday
+                          ? FontWeight.w700
+                          : FontWeight.w400,
+                      color: isSelected
+                          ? Colors.white
+                          : isToday
+                              ? Colors.black
+                              : Colors.grey.shade500,
                     ),
                   ),
                 ],
