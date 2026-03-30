@@ -1,3 +1,5 @@
+[🇫🇷 Lire en français](README.fr.md)
+
 # My Tasks — Daily Task Tracker
 
 A Flutter app for entrepreneurs to write down daily tasks and track progress throughout the day.
