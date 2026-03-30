@@ -71,6 +71,14 @@ class TaskTile extends StatelessWidget {
                   ),
                 ),
               ),
+              GestureDetector(
+                onTap: () => provider.deleteTask(task.id!),
+                child: Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: Colors.grey.shade400,
+                ),
+              ),
             ],
           ),
         ),
