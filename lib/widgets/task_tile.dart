@@ -35,11 +35,16 @@ class TaskTile extends StatelessWidget {
             color: task.isDone ? Colors.grey.shade100 : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: task.isDone ? Colors.grey.shade200 : Colors.grey.shade300,
+              color: task.isUrgent && !task.isDone
+                  ? Colors.red.shade200
+                  : task.isDone
+                      ? Colors.grey.shade200
+                      : Colors.grey.shade300,
             ),
           ),
           child: Row(
             children: [
+              // Checkbox
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 width: 22,
@@ -48,8 +53,7 @@ class TaskTile extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: task.isDone ? Colors.black : Colors.transparent,
                   border: Border.all(
-                    color:
-                        task.isDone ? Colors.black : Colors.grey.shade400,
+                    color: task.isDone ? Colors.black : Colors.grey.shade400,
                     width: 1.5,
                   ),
                 ),
@@ -57,7 +61,19 @@ class TaskTile extends StatelessWidget {
                     ? const Icon(Icons.check, size: 13, color: Colors.white)
                     : null,
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
+              // Urgent dot
+              if (task.isUrgent && !task.isDone)
+                Container(
+                  width: 6,
+                  height: 6,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                ),
+              // Title
               Expanded(
                 child: Text(
                   task.title,
@@ -71,6 +87,17 @@ class TaskTile extends StatelessWidget {
                   ),
                 ),
               ),
+              // Flag button
+              GestureDetector(
+                onTap: () => provider.toggleUrgent(task.id!),
+                child: Icon(
+                  task.isUrgent ? Icons.flag : Icons.flag_outlined,
+                  size: 18,
+                  color: task.isUrgent ? Colors.red : Colors.grey.shade300,
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Delete button
               GestureDetector(
                 onTap: () => provider.deleteTask(task.id!),
                 child: Icon(

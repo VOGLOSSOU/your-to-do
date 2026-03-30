@@ -40,7 +40,7 @@ class DatabaseHelper {
     return newTask;
   }
 
-  Future<void> updateDone(int id, bool isDone, String date) async {
+  Future<void> updateTask(int id, String date, {bool? isDone, bool? isUrgent}) async {
     final prefs = await SharedPreferences.getInstance();
     final key = _keyForDate(date);
     final raw = prefs.getString(key);
@@ -50,7 +50,7 @@ class DatabaseHelper {
         .toList();
     final index = tasks.indexWhere((t) => t.id == id);
     if (index == -1) return;
-    tasks[index] = tasks[index].copyWith(isDone: isDone);
+    tasks[index] = tasks[index].copyWith(isDone: isDone, isUrgent: isUrgent);
     await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 

@@ -27,13 +27,14 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> loadTasks() async {
-    _tasks = await _db.getTasksByDate(selectedDateKey);
+    final tasks = await _db.getTasksByDate(selectedDateKey);
+    _tasks = _sorted(tasks);
     notifyListeners();
   }
 
   Future<void> addTask(String title) async {
     final task = await _db.insertTask(Task(title: title, date: selectedDateKey));
-    _tasks.add(task);
+    _tasks = _sorted([..._tasks, task]);
     notifyListeners();
   }
 
@@ -41,8 +42,18 @@ class TaskProvider extends ChangeNotifier {
     final index = _tasks.indexWhere((t) => t.id == id);
     if (index == -1) return;
     final newVal = !_tasks[index].isDone;
-    await _db.updateDone(id, newVal, selectedDateKey);
+    await _db.updateTask(id, selectedDateKey, isDone: newVal);
     _tasks[index] = _tasks[index].copyWith(isDone: newVal);
+    notifyListeners();
+  }
+
+  Future<void> toggleUrgent(int id) async {
+    final index = _tasks.indexWhere((t) => t.id == id);
+    if (index == -1) return;
+    final newVal = !_tasks[index].isUrgent;
+    await _db.updateTask(id, selectedDateKey, isUrgent: newVal);
+    _tasks[index] = _tasks[index].copyWith(isUrgent: newVal);
+    _tasks = _sorted(_tasks);
     notifyListeners();
   }
 
@@ -50,5 +61,13 @@ class TaskProvider extends ChangeNotifier {
     await _db.deleteTask(id, selectedDateKey);
     _tasks.removeWhere((t) => t.id == id);
     notifyListeners();
+  }
+
+  // Urgent tasks always on top, done tasks always at the bottom
+  List<Task> _sorted(List<Task> tasks) {
+    final urgent = tasks.where((t) => t.isUrgent && !t.isDone).toList();
+    final normal = tasks.where((t) => !t.isUrgent && !t.isDone).toList();
+    final donetasks = tasks.where((t) => t.isDone).toList();
+    return [...urgent, ...normal, ...donetasks];
   }
 }
