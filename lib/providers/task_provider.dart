@@ -12,9 +12,11 @@ class TaskProvider extends ChangeNotifier {
   DateTime _selectedDate = DateTime.now();
   List<Task> _tasks = [];
   TaskFilter _filter = TaskFilter.all;
+  Set<String> _activeDates = {};
 
   DateTime get selectedDate => _selectedDate;
   TaskFilter get filter => _filter;
+  Set<String> get activeDates => _activeDates;
   int get total => _tasks.length;
   int get done => _tasks.where((t) => t.isDone).length;
   double get progress => total == 0 ? 0.0 : done / total;
@@ -37,7 +39,22 @@ class TaskProvider extends ChangeNotifier {
   }
 
   TaskProvider() {
+    _loadActiveDates();
     loadTasks();
+  }
+
+  Future<void> _loadActiveDates() async {
+    final today = DateTime.now();
+    final dates = List.generate(7, (i) {
+      final d = today.subtract(Duration(days: 6 - i));
+      return _fmt.format(d);
+    });
+    final results = await Future.wait(dates.map(_db.hasTasksForDate));
+    _activeDates = {
+      for (int i = 0; i < dates.length; i++)
+        if (results[i]) dates[i]
+    };
+    notifyListeners();
   }
 
   Future<void> selectDate(DateTime date) async {
@@ -54,6 +71,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> addTask(String title) async {
     final task = await _db.insertTask(Task(title: title, date: selectedDateKey));
     _tasks = _sorted([..._tasks, task]);
+    _activeDates.add(selectedDateKey);
     notifyListeners();
   }
 
@@ -79,6 +97,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> deleteTask(int id) async {
     await _db.deleteTask(id, selectedDateKey);
     _tasks.removeWhere((t) => t.id == id);
+    if (_tasks.isEmpty) _activeDates.remove(selectedDateKey);
     notifyListeners();
   }
 

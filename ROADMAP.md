@@ -3,7 +3,7 @@
 ## Immediately useful
 - [x] 1. **Task priority** — mark a task as urgent (red dot) to know what comes first
 - [ ] 2. **Reorder tasks** — drag & drop to manually change the order
-- [ ] 3. **Task counter on the strip** — show a small dot under days that have tasks, to see active days at a glance
+- [x] 3. **Task counter on the strip** — show a small dot under days that have tasks, to see active days at a glance
 
 ## A bit more advanced
 - [ ] 4. **End-of-day summary** — a quick recap: X done, Y not done, with the option to carry unfinished tasks over to the next day

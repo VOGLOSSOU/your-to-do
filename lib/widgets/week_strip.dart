@@ -30,6 +30,8 @@ class WeekStrip extends StatelessWidget {
               day.month == selected.month &&
               day.day == selected.day;
           final isToday = i == 6;
+          final dateKey = DateFormat('yyyy-MM-dd').format(day);
+          final hasTask = provider.activeDates.contains(dateKey);
 
           final dayLetter = DateFormat('E').format(day)[0].toUpperCase();
           final dayNum = '${day.day}';
@@ -46,6 +48,7 @@ class WeekStrip extends StatelessWidget {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     dayLetter,
@@ -72,6 +75,17 @@ class WeekStrip extends StatelessWidget {
                               : Colors.grey.shade500,
                     ),
                   ),
+                  if (hasTask) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isSelected ? Colors.white60 : Colors.black,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -54,6 +54,14 @@ class DatabaseHelper {
     await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 
+  Future<bool> hasTasksForDate(String date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_keyForDate(date));
+    if (raw == null) return false;
+    final List list = jsonDecode(raw);
+    return list.isNotEmpty;
+  }
+
   Future<void> saveAllTasks(String date, List<Task> tasks) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
