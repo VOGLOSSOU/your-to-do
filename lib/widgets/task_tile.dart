@@ -6,7 +6,8 @@ import '../providers/task_provider.dart';
 
 class TaskTile extends StatelessWidget {
   final Task task;
-  const TaskTile({super.key, required this.task});
+  final bool readOnly;
+  const TaskTile({super.key, required this.task, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class TaskTile extends StatelessWidget {
 
     return Dismissible(
       key: Key('task_${task.id}'),
-      direction: DismissDirection.endToStart,
+      direction: readOnly ? DismissDirection.none : DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
@@ -27,7 +28,7 @@ class TaskTile extends StatelessWidget {
       ),
       onDismissed: (_) => provider.deleteTask(task.id!),
       child: GestureDetector(
-        onTap: () => provider.toggleTask(task.id!),
+        onTap: readOnly ? null : () => provider.toggleTask(task.id!),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -87,25 +88,27 @@ class TaskTile extends StatelessWidget {
                   ),
                 ),
               ),
-              // Flag button
-              GestureDetector(
-                onTap: () => provider.toggleUrgent(task.id!),
-                child: Icon(
-                  task.isUrgent ? Icons.flag : Icons.flag_outlined,
-                  size: 18,
-                  color: task.isUrgent ? Colors.red : Colors.grey.shade300,
+              if (!readOnly) ...[
+                // Flag button
+                GestureDetector(
+                  onTap: () => provider.toggleUrgent(task.id!),
+                  child: Icon(
+                    task.isUrgent ? Icons.flag : Icons.flag_outlined,
+                    size: 18,
+                    color: task.isUrgent ? Colors.red : Colors.grey.shade300,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              // Delete button
-              GestureDetector(
-                onTap: () => provider.deleteTask(task.id!),
-                child: Icon(
-                  Icons.delete_outline,
-                  size: 18,
-                  color: Colors.grey.shade400,
+                const SizedBox(width: 10),
+                // Delete button
+                GestureDetector(
+                  onTap: () => provider.deleteTask(task.id!),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: Colors.grey.shade400,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

@@ -27,7 +27,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.watch<TaskProvider>().tasks;
+    final provider = context.watch<TaskProvider>();
+    final tasks = provider.tasks;
+    final today = DateTime.now();
+    final isToday = provider.selectedDate.year == today.year &&
+        provider.selectedDate.month == today.month &&
+        provider.selectedDate.day == today.day;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -77,19 +82,21 @@ class HomeScreen extends StatelessWidget {
                   : ListView.builder(
                       padding: const EdgeInsets.only(bottom: 100),
                       itemCount: tasks.length,
-                      itemBuilder: (_, i) => TaskTile(task: tasks[i]),
+                      itemBuilder: (_, i) => TaskTile(task: tasks[i], readOnly: !isToday),
                     ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddSheet(context),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isToday
+          ? FloatingActionButton(
+              onPressed: () => _showAddSheet(context),
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              elevation: 2,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }
