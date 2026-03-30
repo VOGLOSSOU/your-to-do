@@ -6,7 +6,7 @@
 - [x] 3. **Task counter on the strip** — show a small dot under days that have tasks, to see active days at a glance
 
 ## A bit more advanced
-- [ ] 4. **End-of-day summary** — a quick recap: X done, Y not done, with the option to carry unfinished tasks over to the next day
+- [x] 4. **End-of-day summary** — a quick recap: X done, Y not done, with the option to carry unfinished tasks over to the next day
 - [ ] 5. **Reschedule a task** — button to move a task to another day without deleting it
 - [ ] 6. **Search** — quickly find a task by keyword across all days
 

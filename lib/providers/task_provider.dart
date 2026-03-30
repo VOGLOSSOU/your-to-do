@@ -101,6 +101,24 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<Task> get undoneTasks =>
+      List.unmodifiable(_tasks.where((t) => !t.isDone).toList());
+
+  Future<void> carryOverToTomorrow() async {
+    final undone = _tasks.where((t) => !t.isDone).toList();
+    if (undone.isEmpty) return;
+    final tomorrow = _fmt.format(DateTime.now().add(const Duration(days: 1)));
+    for (final task in undone) {
+      await _db.insertTask(Task(
+        title: task.title,
+        date: tomorrow,
+        isUrgent: task.isUrgent,
+      ));
+    }
+    _activeDates.add(tomorrow);
+    notifyListeners();
+  }
+
   // Urgent tasks always on top, done tasks always at the bottom
   List<Task> _sorted(List<Task> tasks) {
     final urgent = tasks.where((t) => t.isUrgent && !t.isDone).toList();
