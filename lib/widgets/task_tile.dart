@@ -40,7 +40,6 @@ class TaskTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // Checkbox
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 width: 22,
@@ -49,7 +48,8 @@ class TaskTile extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: task.isDone ? Colors.black : Colors.transparent,
                   border: Border.all(
-                    color: task.isDone ? Colors.black : Colors.grey.shade400,
+                    color:
+                        task.isDone ? Colors.black : Colors.grey.shade400,
                     width: 1.5,
                   ),
                 ),
@@ -58,36 +58,17 @@ class TaskTile extends StatelessWidget {
                     : null,
               ),
               const SizedBox(width: 14),
-              // Content
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      task.title,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: task.isDone
-                            ? Colors.grey.shade400
-                            : Colors.black,
-                        decoration: task.isDone
-                            ? TextDecoration.lineThrough
-                            : null,
-                        decorationColor: Colors.grey.shade400,
-                      ),
-                    ),
-                    if (task.startTime != null || task.endTime != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        _timeLabel(),
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ],
-                  ],
+                child: Text(
+                  task.title,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: task.isDone ? Colors.grey.shade400 : Colors.black,
+                    decoration:
+                        task.isDone ? TextDecoration.lineThrough : null,
+                    decorationColor: Colors.grey.shade400,
+                  ),
                 ),
               ),
             ],
@@ -95,15 +76,5 @@ class TaskTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _timeLabel() {
-    if (task.startTime != null && task.endTime != null) {
-      return '${task.startTime} → ${task.endTime}';
-    } else if (task.startTime != null) {
-      return 'À partir de ${task.startTime}';
-    } else {
-      return "Jusqu'à ${task.endTime}";
-    }
   }
 }

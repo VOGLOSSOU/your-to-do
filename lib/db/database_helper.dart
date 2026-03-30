@@ -1,72 +1,68 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
-  static Database? _db;
-
   DatabaseHelper._();
 
-  Future<Database> get database async {
-    _db ??= await _initDb();
-    return _db!;
-  }
+  static int _nextId = 0;
 
-  Future<Database> _initDb() async {
-    final path = join(await getDatabasesPath(), 'your_todo.db');
-    return openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, _) => db.execute('''
-        CREATE TABLE tasks (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          date TEXT NOT NULL,
-          start_time TEXT,
-          end_time TEXT,
-          is_done INTEGER NOT NULL DEFAULT 0
-        )
-      '''),
-    );
+  String _keyForDate(String date) => 'tasks_$date';
+
+  Future<void> _ensureIdCounter(List<Task> allTasks) async {
+    if (allTasks.isNotEmpty) {
+      final maxId = allTasks.map((t) => t.id ?? 0).reduce((a, b) => a > b ? a : b);
+      if (maxId >= _nextId) _nextId = maxId + 1;
+    }
   }
 
   Future<List<Task>> getTasksByDate(String date) async {
-    final db = await database;
-    final rows = await db.query(
-      'tasks',
-      where: 'date = ?',
-      whereArgs: [date],
-      orderBy: 'start_time ASC, id ASC',
-    );
-    return rows.map(Task.fromMap).toList();
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_keyForDate(date));
+    if (raw == null) return [];
+    final List<dynamic> list = jsonDecode(raw);
+    final tasks = list.map((e) => Task.fromMap(Map<String, dynamic>.from(e))).toList();
+    await _ensureIdCounter(tasks);
+    return tasks;
   }
 
   Future<Task> insertTask(Task task) async {
-    final db = await database;
-    final id = await db.insert('tasks', task.toMap());
-    return Task(
-      id: id,
-      title: task.title,
-      date: task.date,
-      startTime: task.startTime,
-      endTime: task.endTime,
-      isDone: task.isDone,
-    );
+    final prefs = await SharedPreferences.getInstance();
+    final key = _keyForDate(task.date);
+    final raw = prefs.getString(key);
+    final List<dynamic> list = raw != null ? jsonDecode(raw) : [];
+    final tasks = list.map((e) => Task.fromMap(Map<String, dynamic>.from(e))).toList();
+
+    final newTask = Task(id: _nextId++, title: task.title, date: task.date);
+    tasks.add(newTask);
+    await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
+    return newTask;
   }
 
-  Future<void> updateDone(int id, bool isDone) async {
-    final db = await database;
-    await db.update(
-      'tasks',
-      {'is_done': isDone ? 1 : 0},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+  Future<void> updateDone(int id, bool isDone, String date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = _keyForDate(date);
+    final raw = prefs.getString(key);
+    if (raw == null) return;
+    final tasks = (jsonDecode(raw) as List)
+        .map((e) => Task.fromMap(Map<String, dynamic>.from(e)))
+        .toList();
+    final index = tasks.indexWhere((t) => t.id == id);
+    if (index == -1) return;
+    tasks[index] = tasks[index].copyWith(isDone: isDone);
+    await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 
-  Future<void> deleteTask(int id) async {
-    final db = await database;
-    await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
+  Future<void> deleteTask(int id, String date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = _keyForDate(date);
+    final raw = prefs.getString(key);
+    if (raw == null) return;
+    final tasks = (jsonDecode(raw) as List)
+        .map((e) => Task.fromMap(Map<String, dynamic>.from(e)))
+        .where((t) => t.id != id)
+        .toList();
+    await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 }

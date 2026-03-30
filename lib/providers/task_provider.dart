@@ -31,20 +31,9 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addTask(String title, String? startTime, String? endTime) async {
-    final task = await _db.insertTask(Task(
-      title: title,
-      date: selectedDateKey,
-      startTime: startTime,
-      endTime: endTime,
-    ));
+  Future<void> addTask(String title) async {
+    final task = await _db.insertTask(Task(title: title, date: selectedDateKey));
     _tasks.add(task);
-    // Re-sort by start time
-    _tasks.sort((a, b) {
-      if (a.startTime == null) return 1;
-      if (b.startTime == null) return -1;
-      return a.startTime!.compareTo(b.startTime!);
-    });
     notifyListeners();
   }
 
@@ -52,13 +41,13 @@ class TaskProvider extends ChangeNotifier {
     final index = _tasks.indexWhere((t) => t.id == id);
     if (index == -1) return;
     final newVal = !_tasks[index].isDone;
-    await _db.updateDone(id, newVal);
+    await _db.updateDone(id, newVal, selectedDateKey);
     _tasks[index] = _tasks[index].copyWith(isDone: newVal);
     notifyListeners();
   }
 
   Future<void> deleteTask(int id) async {
-    await _db.deleteTask(id);
+    await _db.deleteTask(id, selectedDateKey);
     _tasks.removeWhere((t) => t.id == id);
     notifyListeners();
   }

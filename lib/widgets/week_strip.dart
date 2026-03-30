@@ -11,10 +11,13 @@ class WeekStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
     final selected = provider.selectedDate;
+    final today = DateTime.now();
 
-    // Build week starting from Monday
-    final monday = selected.subtract(Duration(days: selected.weekday - 1));
-    final days = List.generate(7, (i) => monday.add(Duration(days: i)));
+    // Last 7 days: J-6 → aujourd'hui
+    final days = List.generate(7, (i) {
+      final d = today.subtract(Duration(days: 6 - i));
+      return DateTime(d.year, d.month, d.day);
+    });
 
     return SizedBox(
       height: 72,
@@ -27,9 +30,7 @@ class WeekStrip extends StatelessWidget {
           final isSelected = day.year == selected.year &&
               day.month == selected.month &&
               day.day == selected.day;
-          final isToday = day.year == DateTime.now().year &&
-              day.month == DateTime.now().month &&
-              day.day == DateTime.now().day;
+          final isToday = i == 6;
 
           return GestureDetector(
             onTap: () => provider.selectDate(day),
