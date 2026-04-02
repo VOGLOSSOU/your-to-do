@@ -70,6 +70,19 @@ class DatabaseHelper {
     return results;
   }
 
+  Future<Map<String, int>> getStatsByDate(String date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_keyForDate(date));
+    if (raw == null) return {'total': 0, 'done': 0};
+    final tasks = (jsonDecode(raw) as List)
+        .map((e) => Task.fromMap(Map<String, dynamic>.from(e)))
+        .toList();
+    return {
+      'total': tasks.length,
+      'done': tasks.where((t) => t.isDone).length,
+    };
+  }
+
   Future<bool> hasTasksForDate(String date) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_keyForDate(date));
