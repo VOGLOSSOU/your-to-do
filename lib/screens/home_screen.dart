@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap: () => showModalBottomSheet(
                                   context: context,
                                   isScrollControlled: true,
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: cs.surface,
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.vertical(
                                         top: Radius.circular(20)),
@@ -178,34 +178,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: const SummarySheet(),
                                   ),
                                 ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: cs.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.bar_chart,
-                                          size: 15,
-                                          color: isDark
-                                              ? Colors.grey.shade400
-                                              : Colors.grey.shade600),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        'Summary',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: isDark
-                                              ? Colors.grey.shade400
-                                              : Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                child: Icon(Icons.bar_chart,
+                                    size: 22,
+                                    color: isDark
+                                        ? Colors.grey.shade500
+                                        : Colors.grey.shade500),
                               ),
                             ],
                           ],
