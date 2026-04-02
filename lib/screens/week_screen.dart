@@ -23,10 +23,18 @@ class _WeekScreenState extends State<WeekScreen> {
   void initState() {
     super.initState();
     _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TaskProvider>().addListener(_onTasksChanged);
+    });
+  }
+
+  void _onTasksChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _load();
+    });
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
     final today = DateTime.now();
     final days = List.generate(7, (i) {
       final d = today.subtract(Duration(days: 5 - i));
@@ -43,9 +51,9 @@ class _WeekScreenState extends State<WeekScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _load();
+  void dispose() {
+    context.read<TaskProvider>().removeListener(_onTasksChanged);
+    super.dispose();
   }
 
   @override
