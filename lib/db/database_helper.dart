@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
+import '../models/recurring_task.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
@@ -83,6 +84,77 @@ class DatabaseHelper {
       _keyForDate(date),
       jsonEncode(tasks.map((t) => t.toMap()).toList()),
     );
+  }
+
+  // ── Recurring tasks ──────────────────────────────────────────
+
+  static const _recurringKey = 'recurring_tasks';
+  static const _seededDatesKey = 'seeded_dates';
+  static int _nextRecurringId = 1000000;
+
+  Future<List<RecurringTask>> getRecurringTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_recurringKey);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List)
+        .map((e) => RecurringTask.fromMap(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  Future<RecurringTask> addRecurringTask(String title, bool isUrgent) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tasks = await getRecurringTasks();
+    final task = RecurringTask(
+      id: _nextRecurringId++,
+      title: title,
+      isUrgent: isUrgent,
+    );
+    tasks.add(task);
+    await prefs.setString(
+        _recurringKey, jsonEncode(tasks.map((t) => t.toMap()).toList()));
+    return task;
+  }
+
+  Future<void> deleteRecurringTask(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tasks = (await getRecurringTasks()).where((t) => t.id != id).toList();
+    await prefs.setString(
+        _recurringKey, jsonEncode(tasks.map((t) => t.toMap()).toList()));
+  }
+
+  Future<void> seedRecurringTasksForDate(String date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final seeded = prefs.getStringList(_seededDatesKey) ?? [];
+    if (seeded.contains(date)) return;
+
+    final recurring = await getRecurringTasks();
+    if (recurring.isEmpty) {
+      seeded.add(date);
+      await prefs.setStringList(_seededDatesKey, seeded);
+      return;
+    }
+
+    final key = _keyForDate(date);
+    final raw = prefs.getString(key);
+    final existing = raw != null
+        ? (jsonDecode(raw) as List)
+            .map((e) => Task.fromMap(Map<String, dynamic>.from(e)))
+            .toList()
+        : <Task>[];
+
+    for (final r in recurring) {
+      final task = Task(
+        id: _nextId++,
+        title: r.title,
+        date: date,
+        isUrgent: r.isUrgent,
+      );
+      existing.add(task);
+    }
+
+    await prefs.setString(key, jsonEncode(existing.map((t) => t.toMap()).toList()));
+    seeded.add(date);
+    await prefs.setStringList(_seededDatesKey, seeded);
   }
 
   Future<void> deleteTask(int id, String date) async {

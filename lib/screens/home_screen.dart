@@ -9,6 +9,7 @@ import '../widgets/task_tile.dart';
 import '../widgets/add_task_sheet.dart';
 import '../widgets/summary_sheet.dart';
 import '../widgets/search_results.dart';
+import '../widgets/recurring_tasks_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,6 +121,28 @@ class _HomeScreenState extends State<HomeScreen> {
                             GestureDetector(
                               onTap: () => provider.openSearch(),
                               child: Icon(Icons.search,
+                                  size: 22,
+                                  color: isDark
+                                      ? Colors.grey.shade500
+                                      : Colors.grey.shade500),
+                            ),
+                            const SizedBox(width: 14),
+                            // Recurring tasks
+                            GestureDetector(
+                              onTap: () => showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: cs.surface,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20)),
+                                ),
+                                builder: (_) => ChangeNotifierProvider.value(
+                                  value: provider,
+                                  child: const RecurringTasksSheet(),
+                                ),
+                              ),
+                              child: Icon(Icons.repeat,
                                   size: 22,
                                   color: isDark
                                       ? Colors.grey.shade500
