@@ -92,7 +92,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> loadTasks() async {
     final today = DateTime.now();
     final todayKey = _fmt.format(DateTime(today.year, today.month, today.day));
-    if (selectedDateKey >= todayKey) {
+    if (selectedDateKey.compareTo(todayKey) >= 0) {
       await _db.seedRecurringTasksForDate(selectedDateKey);
     }
     final tasks = await _db.getTasksByDate(selectedDateKey);
