@@ -89,7 +89,6 @@ class DatabaseHelper {
   // ── Recurring tasks ──────────────────────────────────────────
 
   static const _recurringKey = 'recurring_tasks';
-  static const _seededDatesKey = 'seeded_dates';
   static int _nextRecurringId = 1000000;
 
   Future<List<RecurringTask>> getRecurringTasks() async {
@@ -104,6 +103,11 @@ class DatabaseHelper {
   Future<RecurringTask> addRecurringTask(String title, bool isUrgent) async {
     final prefs = await SharedPreferences.getInstance();
     final tasks = await getRecurringTasks();
+    // Use max existing ID + 1 to survive restarts
+    if (tasks.isNotEmpty) {
+      final maxId = tasks.map((t) => t.id).reduce((a, b) => a > b ? a : b);
+      if (maxId >= _nextRecurringId) _nextRecurringId = maxId + 1;
+    }
     final task = RecurringTask(
       id: _nextRecurringId++,
       title: title,
@@ -122,17 +126,21 @@ class DatabaseHelper {
         _recurringKey, jsonEncode(tasks.map((t) => t.toMap()).toList()));
   }
 
+  String _seededRecurringKey(String date) => 'seeded_recurring_$date';
+
   Future<void> seedRecurringTasksForDate(String date) async {
     final prefs = await SharedPreferences.getInstance();
-    final seeded = prefs.getStringList(_seededDatesKey) ?? [];
-    if (seeded.contains(date)) return;
-
     final recurring = await getRecurringTasks();
-    if (recurring.isEmpty) {
-      seeded.add(date);
-      await prefs.setStringList(_seededDatesKey, seeded);
-      return;
-    }
+    if (recurring.isEmpty) return;
+
+    // Track which recurring IDs have already been seeded for this date
+    final seededKey = _seededRecurringKey(date);
+    final seededIds = (prefs.getStringList(seededKey) ?? [])
+        .map(int.parse)
+        .toSet();
+
+    final toAdd = recurring.where((r) => !seededIds.contains(r.id)).toList();
+    if (toAdd.isEmpty) return;
 
     final key = _keyForDate(date);
     final raw = prefs.getString(key);
@@ -142,19 +150,30 @@ class DatabaseHelper {
             .toList()
         : <Task>[];
 
-    for (final r in recurring) {
-      final task = Task(
-        id: _nextId++,
+    // Use safe IDs above existing max
+    int maxId = _nextId;
+    if (existing.isNotEmpty) {
+      final existingMax = existing
+          .map((t) => t.id ?? 0)
+          .reduce((a, b) => a > b ? a : b);
+      if (existingMax >= maxId) maxId = existingMax + 1;
+    }
+
+    for (final r in toAdd) {
+      existing.add(Task(
+        id: maxId++,
         title: r.title,
         date: date,
         isUrgent: r.isUrgent,
-      );
-      existing.add(task);
+      ));
+      seededIds.add(r.id);
     }
+    _nextId = maxId;
 
-    await prefs.setString(key, jsonEncode(existing.map((t) => t.toMap()).toList()));
-    seeded.add(date);
-    await prefs.setStringList(_seededDatesKey, seeded);
+    await prefs.setString(
+        key, jsonEncode(existing.map((t) => t.toMap()).toList()));
+    await prefs.setStringList(
+        seededKey, seededIds.map((id) => id.toString()).toList());
   }
 
   Future<void> deleteTask(int id, String date) async {
