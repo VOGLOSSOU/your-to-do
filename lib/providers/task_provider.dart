@@ -58,8 +58,8 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addRecurringTask(String title, {bool isUrgent = false}) async {
-    final task = await _db.addRecurringTask(title, isUrgent);
+  Future<void> addRecurringTask(String title, String description, {bool isUrgent = false}) async {
+    final task = await _db.addRecurringTask(title, description, isUrgent);
     _recurringTasks.add(task);
     await loadTasks();
   }
@@ -96,8 +96,8 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addTask(String title) async {
-    final task = await _db.insertTask(Task(title: title, date: selectedDateKey));
+  Future<void> addTask(String title, String description) async {
+    final task = await _db.insertTask(Task(title: title, description: description, date: selectedDateKey));
     _tasks = _sorted([..._tasks, task]);
     _activeDates.add(selectedDateKey);
     notifyListeners();

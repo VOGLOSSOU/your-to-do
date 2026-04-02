@@ -35,7 +35,7 @@ class DatabaseHelper {
     final List<dynamic> list = raw != null ? jsonDecode(raw) : [];
     final tasks = list.map((e) => Task.fromMap(Map<String, dynamic>.from(e))).toList();
 
-    final newTask = Task(id: _nextId++, title: task.title, date: task.date);
+    final newTask = Task(id: _nextId++, title: task.title, description: task.description, date: task.date, isUrgent: task.isUrgent);
     tasks.add(newTask);
     await prefs.setString(key, jsonEncode(tasks.map((t) => t.toMap()).toList()));
     return newTask;
@@ -100,10 +100,9 @@ class DatabaseHelper {
         .toList();
   }
 
-  Future<RecurringTask> addRecurringTask(String title, bool isUrgent) async {
+  Future<RecurringTask> addRecurringTask(String title, String description, bool isUrgent) async {
     final prefs = await SharedPreferences.getInstance();
     final tasks = await getRecurringTasks();
-    // Use max existing ID + 1 to survive restarts
     if (tasks.isNotEmpty) {
       final maxId = tasks.map((t) => t.id).reduce((a, b) => a > b ? a : b);
       if (maxId >= _nextRecurringId) _nextRecurringId = maxId + 1;
@@ -111,6 +110,7 @@ class DatabaseHelper {
     final task = RecurringTask(
       id: _nextRecurringId++,
       title: title,
+      description: description,
       isUrgent: isUrgent,
     );
     tasks.add(task);
@@ -163,6 +163,7 @@ class DatabaseHelper {
       existing.add(Task(
         id: maxId++,
         title: r.title,
+        description: r.description,
         date: date,
         isUrgent: r.isUrgent,
       ));

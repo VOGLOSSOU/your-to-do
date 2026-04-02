@@ -12,17 +12,22 @@ class AddTaskSheet extends StatefulWidget {
 
 class _AddTaskSheetState extends State<AddTaskSheet> {
   final _titleController = TextEditingController();
+  final _descController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _titleController.dispose();
+    _descController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<TaskProvider>().addTask(_titleController.text.trim());
+    context.read<TaskProvider>().addTask(
+          _titleController.text.trim(),
+          _descController.text.trim(),
+        );
     Navigator.pop(context);
   }
 
@@ -61,16 +66,37 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               ),
             ),
             const SizedBox(height: 20),
+            // Title
             TextFormField(
               controller: _titleController,
               autofocus: true,
               style: GoogleFonts.inter(fontSize: 15, color: cs.onSurface),
               decoration: InputDecoration(
-                hintText: 'e.g. Call client X, code feature Y...',
+                hintText: 'Task title',
                 hintStyle: GoogleFonts.inter(
-                    color: isDark
-                        ? Colors.grey.shade600
-                        : Colors.grey.shade400),
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+                filled: true,
+                fillColor: cs.surfaceContainerHighest,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 12),
+            // Description
+            TextFormField(
+              controller: _descController,
+              style: GoogleFonts.inter(fontSize: 15, color: cs.onSurface),
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Description — what exactly needs to be done?',
+                hintStyle: GoogleFonts.inter(
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                    fontSize: 14),
                 filled: true,
                 fillColor: cs.surfaceContainerHighest,
                 border: OutlineInputBorder(
@@ -100,9 +126,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 child: Text(
                   'Add',
                   style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                      fontWeight: FontWeight.w600, fontSize: 15),
                 ),
               ),
             ),
