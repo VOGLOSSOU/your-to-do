@@ -61,7 +61,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> addRecurringTask(String title, {bool isUrgent = false}) async {
     final task = await _db.addRecurringTask(title, isUrgent);
     _recurringTasks.add(task);
-    notifyListeners();
+    await loadTasks();
   }
 
   Future<void> deleteRecurringTask(int id) async {
