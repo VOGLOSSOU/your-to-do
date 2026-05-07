@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter build *)",
+      "Read(//usr/lib/android-sdk/ndk/**)",
+      "Read(//usr/lib/android-sdk/ndk/28.2.13676358/**)",
+      "Bash(rm -rf /usr/lib/android-sdk/ndk/28.2.13676358 && echo \"Supprimé\")",
+      "Bash(find /tmp -name \"bdgotxov5*\" 2>/dev/null; ls /home/nathan-voglossou/your-to-do/build/app/outputs/flutter-apk/ 2>/dev/null)",
+      "Read(//tmp/**)",
+      "Bash(wait)",
+      "Bash(./android/gradlew -p android assembleRelease)",
+      "Bash(./android/gradlew -p android :flutter_timezone:compileReleaseKotlin)",
+      "Read(//usr/lib/jvm/**)",
+      "Bash(java -version)",
+      "Bash(javac -version)",
+      "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 flutter build apk --release)",
+      "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./android/gradlew -p android assembleRelease)",
+      "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./android/gradlew -p android assembleRelease --stacktrace)"
+    ],
+    "additionalDirectories": [
+      "/usr/lib/android-sdk/ndk/28.2.13676358"
+    ]
+  }
+}

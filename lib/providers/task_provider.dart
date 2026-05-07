@@ -4,48 +4,23 @@ import '../db/database_helper.dart';
 import '../models/task.dart';
 import '../models/recurring_task.dart';
 
-enum TaskFilter { all, urgent, normal }
-
 class TaskProvider extends ChangeNotifier {
   final _db = DatabaseHelper.instance;
   final _fmt = DateFormat('yyyy-MM-dd');
 
   DateTime _selectedDate = DateTime.now();
   List<Task> _tasks = [];
-  TaskFilter _filter = TaskFilter.all;
   Set<String> _activeDates = {};
-  String _searchQuery = '';
-  List<Task> _searchResults = [];
-  bool _isSearching = false;
   List<RecurringTask> _recurringTasks = [];
 
   DateTime get selectedDate => _selectedDate;
-  TaskFilter get filter => _filter;
   Set<String> get activeDates => _activeDates;
-  bool get isSearching => _isSearching;
-  String get searchQuery => _searchQuery;
-  List<Task> get searchResults => List.unmodifiable(_searchResults);
   List<RecurringTask> get recurringTasks => List.unmodifiable(_recurringTasks);
   int get total => _tasks.length;
   int get done => _tasks.where((t) => t.isDone).length;
   double get progress => total == 0 ? 0.0 : done / total;
   String get selectedDateKey => _fmt.format(_selectedDate);
-
-  List<Task> get tasks {
-    switch (_filter) {
-      case TaskFilter.urgent:
-        return List.unmodifiable(_tasks.where((t) => t.isUrgent).toList());
-      case TaskFilter.normal:
-        return List.unmodifiable(_tasks.where((t) => !t.isUrgent).toList());
-      case TaskFilter.all:
-        return List.unmodifiable(_tasks);
-    }
-  }
-
-  void setFilter(TaskFilter f) {
-    _filter = f;
-    notifyListeners();
-  }
+  List<Task> get tasks => List.unmodifiable(_tasks);
 
   TaskProvider() {
     _loadActiveDates();
@@ -133,36 +108,6 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openSearch() {
-    _isSearching = true;
-    _searchQuery = '';
-    _searchResults = [];
-    notifyListeners();
-  }
-
-  void closeSearch() {
-    _isSearching = false;
-    _searchQuery = '';
-    _searchResults = [];
-    notifyListeners();
-  }
-
-  Future<void> search(String query) async {
-    _searchQuery = query;
-    if (query.trim().isEmpty) {
-      _searchResults = [];
-      notifyListeners();
-      return;
-    }
-    final today = DateTime.now();
-    final dates = List.generate(7, (i) {
-      final d = today.subtract(Duration(days: 5 - i));
-      return _fmt.format(d);
-    });
-    _searchResults = await _db.searchTasks(query, dates);
-    notifyListeners();
-  }
-
   List<Task> get undoneTasks =>
       List.unmodifiable(_tasks.where((t) => !t.isDone).toList());
 
@@ -170,7 +115,6 @@ class TaskProvider extends ChangeNotifier {
     final undone = _tasks.where((t) => !t.isDone).toList();
     if (undone.isEmpty) return;
     final tomorrow = _fmt.format(DateTime.now().add(const Duration(days: 1)));
-    // Copy to tomorrow
     for (final task in undone) {
       await _db.insertTask(Task(
         title: task.title,
@@ -178,7 +122,6 @@ class TaskProvider extends ChangeNotifier {
         isUrgent: task.isUrgent,
       ));
     }
-    // Remove from today
     for (final task in undone) {
       await _db.deleteTask(task.id!, selectedDateKey);
     }
@@ -188,7 +131,6 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Urgent tasks always on top, done tasks always at the bottom
   List<Task> _sorted(List<Task> tasks) {
     final urgent = tasks.where((t) => t.isUrgent && !t.isDone).toList();
     final normal = tasks.where((t) => !t.isUrgent && !t.isDone).toList();
