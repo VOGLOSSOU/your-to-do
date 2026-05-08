@@ -1,6 +1,6 @@
 [🇫🇷 Lire en français](README.fr.md)
 
-# My Tasks — Daily Task Tracker
+# ORDO — Daily Task Tracker
 
 A clean, minimal Flutter app built for entrepreneurs who want a digital version of their daily notebook. Write tasks, track progress, stay consistent.
 
@@ -40,10 +40,11 @@ A clean, minimal Flutter app built for entrepreneurs who want a digital version 
 ### UI
 - **Dark mode** — full black theme, toggle from any screen, preference saved
 - **No lock screen** — opens directly to your tasks
+- **App name** — ORDO, with custom icon and splash screen on launch
 
 ## How it works
 
-Open the app → write your tasks for the day → check them off as you go. Flag urgent tasks to keep them at the top. At the end of the day, open the summary and carry unfinished work to tomorrow. Check the Week tab to see how consistent you've been.
+Open ORDO → write your tasks for the day → check them off as you go. Flag urgent tasks to keep them at the top. At the end of the day, open the summary and carry unfinished work to tomorrow. Check the Week tab to see how consistent you've been.
 
 ## Tech stack
 
@@ -52,6 +53,7 @@ Open the app → write your tasks for the day → check them off as you go. Flag
 - `provider` — state management
 - `google_fonts` — Inter font
 - `flutter_local_notifications` + `timezone` — scheduled daily reminders
+- `flutter_native_splash` — branded splash screen on launch
 - `intl` — date formatting
 
 ## Project structure

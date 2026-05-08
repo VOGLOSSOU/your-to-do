@@ -1,6 +1,6 @@
 [🇬🇧 Read in English](README.md)
 
-# My Tasks — Suivi de tâches quotidiennes
+# ORDO — Suivi de tâches quotidiennes
 
 Une app Flutter propre et minimaliste conçue pour les entrepreneurs qui veulent une version digitale de leur carnet quotidien. Écris tes tâches, suis ta progression, reste consistant.
 
@@ -40,10 +40,11 @@ Une app Flutter propre et minimaliste conçue pour les entrepreneurs qui veulent
 ### Interface
 - **Mode sombre** — thème noir complet, toggle depuis n'importe quel écran, préférence sauvegardée
 - **Pas d'écran de verrouillage** — s'ouvre directement sur tes tâches
+- **Nom de l'app** — ORDO, avec icône personnalisée et splash screen au lancement
 
 ## Comment ça marche
 
-Tu ouvres l'app → tu écris tes tâches du jour → tu les coches au fur et à mesure. Marque les urgentes pour les garder en haut. En fin de journée, ouvre le récapitulatif et reporte le reste au lendemain. Consulte l'onglet Semaine pour voir ta consistance sur les 7 derniers jours.
+Tu ouvres ORDO → tu écris tes tâches du jour → tu les coches au fur et à mesure. Marque les urgentes pour les garder en haut. En fin de journée, ouvre le récapitulatif et reporte le reste au lendemain. Consulte l'onglet Semaine pour voir ta consistance sur les 7 derniers jours.
 
 ## Stack technique
 
@@ -52,6 +53,7 @@ Tu ouvres l'app → tu écris tes tâches du jour → tu les coches au fur et à
 - `provider` — gestion d'état
 - `google_fonts` — police Inter
 - `flutter_local_notifications` + `timezone` — rappels quotidiens planifiés
+- `flutter_native_splash` — splash screen brandé au lancement
 - `intl` — formatage des dates
 
 ## Structure du projet

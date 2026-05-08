@@ -1,4 +1,4 @@
-# Roadmap
+# ORDO — Roadmap
 
 ## Fait
 
@@ -16,6 +16,9 @@
 - [x] Notifications push quotidiennes à heure configurable
 - [x] Suppression du lock screen (accès direct)
 - [x] Navigation bottom bar (Tasks / Week)
+- [x] Renommage en ORDO — icône personnalisée, splash screen au lancement
+- [x] Titres des pages en minuscule sans "My" (tasks, week)
+- [x] Icônes web (favicon, PWA) mises à jour avec le logo ORDO
 
 ## À faire
 

@@ -15,7 +15,10 @@
       "Bash(javac -version)",
       "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 flutter build apk --release)",
       "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./android/gradlew -p android assembleRelease)",
-      "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./android/gradlew -p android assembleRelease --stacktrace)"
+      "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./android/gradlew -p android assembleRelease --stacktrace)",
+      "Bash(convert --version)",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL OK'\\)\")",
+      "Bash(python3 -c \"import PIL\")"
     ],
     "additionalDirectories": [
       "/usr/lib/android-sdk/ndk/28.2.13676358"
