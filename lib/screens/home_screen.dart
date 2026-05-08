@@ -9,7 +9,6 @@ import '../widgets/task_tile.dart';
 import '../widgets/add_task_sheet.dart';
 import '../widgets/summary_sheet.dart';
 import '../widgets/recurring_tasks_sheet.dart';
-import '../widgets/notification_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -71,19 +70,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: cs.surface,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                          ),
-                          builder: (_) => const NotificationSheet(),
-                        ),
-                        child: Icon(Icons.notifications_outlined, size: 22, color: Colors.grey.shade500),
-                      ),
-                      const SizedBox(width: 14),
                       GestureDetector(
                         onTap: () => showModalBottomSheet(
                           context: context,

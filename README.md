@@ -32,11 +32,6 @@ A clean, minimal Flutter app built for entrepreneurs who want a digital version 
 - **Consistency score** — "X / Y active days fully completed" to track your discipline over the week
 - **Day cards** — green border when all done, tap a day to navigate to it in the Tasks tab
 
-### Notifications
-- **Daily reminder** — tap the bell icon to set a daily notification at any time you choose
-- Toggle on/off, change time with a time picker
-- Persists across app restarts and phone reboots
-
 ### UI
 - **Dark mode** — full black theme, toggle from any screen, preference saved
 - **No lock screen** — opens directly to your tasks
@@ -52,7 +47,6 @@ Open ORDO → write your tasks for the day → check them off as you go. Flag ur
 - `shared_preferences` — local JSON storage, no server needed
 - `provider` — state management
 - `google_fonts` — Inter font
-- `flutter_local_notifications` + `timezone` — scheduled daily reminders
 - `flutter_native_splash` — branded splash screen on launch
 - `intl` — date formatting
 

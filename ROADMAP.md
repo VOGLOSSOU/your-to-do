@@ -13,7 +13,7 @@
 - [x] Tâches récurrentes (seed automatique chaque jour)
 - [x] Vue semaine avec stats par jour et score de consistance
 - [x] Mode sombre / clair (sauvegardé)
-- [x] Notifications push quotidiennes à heure configurable
+- [x] Notifications push — retirées volontairement (pas nécessaires, l'ouverture manuelle est l'acte de discipline)
 - [x] Suppression du lock screen (accès direct)
 - [x] Navigation bottom bar (Tasks / Week)
 - [x] Renommage en ORDO — icône personnalisée, splash screen au lancement

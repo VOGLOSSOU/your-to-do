@@ -7,13 +7,11 @@ import 'package:provider/provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/main_screen.dart';
-import 'services/notification_service.dart';
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await initializeDateFormatting('en_US', null);
-  await NotificationService.instance.init();
   FlutterNativeSplash.remove();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,

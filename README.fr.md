@@ -32,11 +32,6 @@ Une app Flutter propre et minimaliste conçue pour les entrepreneurs qui veulent
 - **Score de consistance** — "X / Y jours actifs entièrement complétés" pour mesurer ta discipline sur la semaine
 - **Cartes de jour** — bordure verte quand tout est fait, tape un jour pour y naviguer dans l'onglet Tâches
 
-### Notifications
-- **Rappel quotidien** — tape l'icône cloche pour définir une notification quotidienne à l'heure de ton choix
-- Activer/désactiver, changer l'heure via un time picker
-- Persiste après redémarrage de l'app et du téléphone
-
 ### Interface
 - **Mode sombre** — thème noir complet, toggle depuis n'importe quel écran, préférence sauvegardée
 - **Pas d'écran de verrouillage** — s'ouvre directement sur tes tâches
@@ -52,7 +47,6 @@ Tu ouvres ORDO → tu écris tes tâches du jour → tu les coches au fur et à 
 - `shared_preferences` — stockage JSON local, aucun serveur nécessaire
 - `provider` — gestion d'état
 - `google_fonts` — police Inter
-- `flutter_local_notifications` + `timezone` — rappels quotidiens planifiés
 - `flutter_native_splash` — splash screen brandé au lancement
 - `intl` — formatage des dates
 
