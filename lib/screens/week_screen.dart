@@ -89,7 +89,7 @@ class _WeekScreenState extends State<WeekScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => themeProvider.toggle(),
+                    onTap: () => themeProvider.toggle(Theme.of(context).brightness),
                     child: Icon(
                       isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                       size: 22,

@@ -45,7 +45,7 @@ class HomeScreen extends StatelessWidget {
     final isPast = selected.isBefore(today);
     final isToday = selected == today;
     final themeProvider = context.watch<ThemeProvider>();
-    final isDark = themeProvider.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -101,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 14),
                       GestureDetector(
-                        onTap: () => themeProvider.toggle(),
+                        onTap: () => themeProvider.toggle(Theme.of(context).brightness),
                         child: Icon(
                           isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                           size: 22,

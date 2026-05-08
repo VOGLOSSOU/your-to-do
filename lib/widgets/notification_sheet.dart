@@ -15,6 +15,7 @@ class _NotificationSheetState extends State<NotificationSheet> {
   int _minute = 0;
   bool _loading = true;
   bool _testing = false;
+  bool _hasExactPermission = true;
 
   @override
   void initState() {
@@ -24,11 +25,13 @@ class _NotificationSheetState extends State<NotificationSheet> {
 
   Future<void> _load() async {
     final s = await NotificationService.instance.getSettings();
+    final exactOk = await NotificationService.instance.hasExactAlarmPermission();
     if (mounted) {
       setState(() {
         _enabled = s.enabled;
         _hour = s.hour;
         _minute = s.minute;
+        _hasExactPermission = exactOk;
         _loading = false;
       });
     }
@@ -49,29 +52,34 @@ class _NotificationSheetState extends State<NotificationSheet> {
   }
 
   Future<void> _toggle(bool val) async {
-    // Update UI immediately so toggle feels responsive
     setState(() => _enabled = val);
     if (val) {
       final granted = await NotificationService.instance.requestPermission();
       if (!granted && mounted) {
-        // Permission denied — revert toggle
         setState(() => _enabled = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Permission denied. Enable notifications in your phone settings.',
-              style: GoogleFonts.inter(fontSize: 13),
-            ),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
+        _showSnack('Permission refusée. Active les notifications dans les paramètres.', Colors.red.shade700);
         return;
+      }
+      final exactOk = await NotificationService.instance.hasExactAlarmPermission();
+      if (!exactOk && mounted) {
+        setState(() => _hasExactPermission = false);
       }
       await NotificationService.instance.scheduleDailyReminder(_hour, _minute);
     } else {
       await NotificationService.instance.cancel();
+    }
+  }
+
+  Future<void> _requestExactPermission() async {
+    await NotificationService.instance.requestExactAlarmPermission();
+    // Re-check after returning from settings
+    final exactOk = await NotificationService.instance.hasExactAlarmPermission();
+    if (mounted) {
+      setState(() => _hasExactPermission = exactOk);
+      if (exactOk && _enabled) {
+        await NotificationService.instance.scheduleDailyReminder(_hour, _minute);
+        _showSnack('Permission accordée — rappel activé.', Colors.green.shade700);
+      }
     }
   }
 
@@ -80,34 +88,25 @@ class _NotificationSheetState extends State<NotificationSheet> {
     final granted = await NotificationService.instance.requestPermission();
     if (!granted && mounted) {
       setState(() => _testing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Permission denied. Enable notifications in your phone settings.',
-            style: GoogleFonts.inter(fontSize: 13),
-          ),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
+      _showSnack('Permission refusée. Active les notifications dans les paramètres.', Colors.red.shade700);
       return;
     }
     await NotificationService.instance.sendTestNotification();
     if (mounted) {
       setState(() => _testing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Test notification sent — check your notification bar.',
-            style: GoogleFonts.inter(fontSize: 13),
-          ),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
+      _showSnack('Notification test envoyée — vérifie ta barre.', Colors.green.shade700);
     }
+  }
+
+  void _showSnack(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: GoogleFonts.inter(fontSize: 13)),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   String _timeLabel() {
@@ -150,16 +149,42 @@ class _NotificationSheetState extends State<NotificationSheet> {
           const SizedBox(height: 6),
           Text(
             'Get notified every morning to check your tasks.',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
-            ),
+            style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500),
           ),
           const SizedBox(height: 24),
 
           if (_loading)
             const Center(child: CircularProgressIndicator())
           else ...[
+
+            // Warning: exact alarm permission missing
+            if (!_hasExactPermission) ...[
+              GestureDetector(
+                onTap: _requestExactPermission,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.orange.shade600, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Tap to grant "Exact alarms" permission — required for the reminder to fire on time.',
+                          style: GoogleFonts.inter(fontSize: 13, color: Colors.orange.shade800),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
             // Enable toggle
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -172,11 +197,7 @@ class _NotificationSheetState extends State<NotificationSheet> {
                 children: [
                   Text(
                     'Enable reminder',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: cs.onSurface,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: cs.onSurface),
                   ),
                   Switch(
                     value: _enabled,
@@ -188,7 +209,7 @@ class _NotificationSheetState extends State<NotificationSheet> {
             ),
             const SizedBox(height: 12),
 
-            // Time picker row
+            // Time picker
             GestureDetector(
               onTap: _pickTime,
               child: Container(
@@ -206,21 +227,13 @@ class _NotificationSheetState extends State<NotificationSheet> {
                   children: [
                     Text(
                       'Reminder time',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: cs.onSurface,
-                      ),
+                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: cs.onSurface),
                     ),
                     Row(
                       children: [
                         Text(
                           _timeLabel(),
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: cs.onSurface,
-                          ),
+                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface),
                         ),
                         const SizedBox(width: 6),
                         Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade500),
@@ -232,7 +245,7 @@ class _NotificationSheetState extends State<NotificationSheet> {
             ),
             const SizedBox(height: 12),
 
-            // Test notification button
+            // Test button
             GestureDetector(
               onTap: _testing ? null : _sendTest,
               child: Container(
@@ -247,20 +260,12 @@ class _NotificationSheetState extends State<NotificationSheet> {
                   children: [
                     Text(
                       'Send test notification',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: cs.onSurface,
-                      ),
+                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: cs.onSurface),
                     ),
                     _testing
                         ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: cs.onSurface,
-                            ),
+                            width: 18, height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: cs.onSurface),
                           )
                         : Icon(Icons.send_outlined, size: 18, color: Colors.grey.shade500),
                   ],
@@ -280,11 +285,7 @@ class _NotificationSheetState extends State<NotificationSheet> {
               ),
               child: Text(
                 'Done',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: cs.onSurface,
-                ),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15, color: cs.onSurface),
               ),
             ),
           ),

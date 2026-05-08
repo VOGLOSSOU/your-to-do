@@ -27,18 +27,32 @@ class NotificationService {
 
   Future<void> init() async {
     tz.initializeTimeZones();
-    // Always use UTC and convert local time manually — avoids any timezone detection issues
     tz.setLocalLocation(tz.UTC);
-
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     await _plugin.initialize(const InitializationSettings(android: android));
   }
 
+  // Returns true if notifications permission granted
   Future<bool> requestPermission() async {
     final result = await _plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
     return result ?? false;
+  }
+
+  // Returns true if exact alarm permission is granted (Android 12+)
+  Future<bool> hasExactAlarmPermission() async {
+    final result = await _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.canScheduleExactNotifications();
+    return result ?? true; // true on older Android versions
+  }
+
+  // Opens system settings to grant exact alarm permission
+  Future<void> requestExactAlarmPermission() async {
+    await _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
   }
 
   Future<void> scheduleDailyReminder(int hour, int minute) async {
@@ -50,11 +64,11 @@ class NotificationService {
     await _plugin.cancel(_notifId);
     await _plugin.zonedSchedule(
       _notifId,
-      'My Tasks',
+      'ORDO',
       'Time to check your tasks for today',
       _nextInstanceOf(hour, minute),
       const NotificationDetails(android: _channel),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -64,7 +78,7 @@ class NotificationService {
   Future<void> sendTestNotification() async {
     await _plugin.show(
       _testNotifId,
-      'My Tasks',
+      'ORDO',
       'Notifications are working!',
       const NotificationDetails(android: _channel),
     );
@@ -85,7 +99,6 @@ class NotificationService {
     );
   }
 
-  // Converts local desired time to UTC for scheduling
   tz.TZDateTime _nextInstanceOf(int hour, int minute) {
     final nowLocal = DateTime.now();
     var targetLocal = DateTime(nowLocal.year, nowLocal.month, nowLocal.day, hour, minute);

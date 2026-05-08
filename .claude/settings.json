@@ -18,7 +18,8 @@
       "Bash(JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./android/gradlew -p android assembleRelease --stacktrace)",
       "Bash(convert --version)",
       "Bash(python3 -c \"from PIL import Image; print\\('PIL OK'\\)\")",
-      "Bash(python3 -c \"import PIL\")"
+      "Bash(python3 -c \"import PIL\")",
+      "Bash(grep -v \"^$\\\\|Analyzing\\\\|ran in\")"
     ],
     "additionalDirectories": [
       "/usr/lib/android-sdk/ndk/28.2.13676358"
