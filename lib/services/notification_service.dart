@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -11,51 +10,35 @@ class NotificationService {
   final _plugin = FlutterLocalNotificationsPlugin();
 
   static const _notifId = 42;
+  static const _testNotifId = 99;
   static const _channelId = 'daily_tasks';
   static const _hourKey = 'notif_hour';
   static const _minKey = 'notif_min';
   static const _enabledKey = 'notif_enabled';
 
+  static const _channel = AndroidNotificationDetails(
+    _channelId,
+    'Daily reminder',
+    channelDescription: 'Daily task reminder',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: '@mipmap/ic_launcher',
+  );
+
   Future<void> init() async {
     tz.initializeTimeZones();
-    _setLocalTimezone();
+    // Always use UTC and convert local time manually — avoids any timezone detection issues
+    tz.setLocalLocation(tz.UTC);
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     await _plugin.initialize(const InitializationSettings(android: android));
   }
 
-  void _setLocalTimezone() {
-    // On Android, DateTime.now().timeZoneName returns the IANA timezone ID
-    final tzName = DateTime.now().timeZoneName;
-    try {
-      tz.setLocalLocation(tz.getLocation(tzName));
-      return;
-    } catch (_) {}
-
-    // Fallback: read /etc/timezone (works on Android/Linux)
-    try {
-      final f = File('/etc/timezone');
-      if (f.existsSync()) {
-        final name = f.readAsStringSync().trim();
-        tz.setLocalLocation(tz.getLocation(name));
-        return;
-      }
-    } catch (_) {}
-
-    // Last resort: match by UTC offset
-    final offsetMs = DateTime.now().timeZoneOffset.inMilliseconds;
-    for (final loc in tz.timeZoneDatabase.locations.values) {
-      if (loc.currentTimeZone.offset == offsetMs) {
-        tz.setLocalLocation(loc);
-        return;
-      }
-    }
-  }
-
-  Future<void> requestPermission() async {
-    await _plugin
+  Future<bool> requestPermission() async {
+    final result = await _plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
+    return result ?? false;
   }
 
   Future<void> scheduleDailyReminder(int hour, int minute) async {
@@ -70,20 +53,20 @@ class NotificationService {
       'My Tasks',
       'Time to check your tasks for today',
       _nextInstanceOf(hour, minute),
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          'Daily reminder',
-          channelDescription: 'Daily task reminder',
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-        ),
-      ),
+      const NotificationDetails(android: _channel),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  Future<void> sendTestNotification() async {
+    await _plugin.show(
+      _testNotifId,
+      'My Tasks',
+      'Notifications are working!',
+      const NotificationDetails(android: _channel),
     );
   }
 
@@ -102,12 +85,15 @@ class NotificationService {
     );
   }
 
+  // Converts local desired time to UTC for scheduling
   tz.TZDateTime _nextInstanceOf(int hour, int minute) {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
+    final nowLocal = DateTime.now();
+    var targetLocal = DateTime(nowLocal.year, nowLocal.month, nowLocal.day, hour, minute);
+    if (targetLocal.isBefore(nowLocal)) {
+      targetLocal = targetLocal.add(const Duration(days: 1));
     }
-    return scheduled;
+    final targetUtc = targetLocal.toUtc();
+    return tz.TZDateTime(tz.UTC, targetUtc.year, targetUtc.month, targetUtc.day,
+        targetUtc.hour, targetUtc.minute);
   }
 }
